@@ -1,38 +1,51 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { RestaurantService } from './restaurant.service';
+import { RestaurantDto } from './dtos/restaurant.dto';
+import { Restaurant } from './schema/restaurant_schema';
 
 @Controller('restaurants')
 export class RestaurantController {
+  constructor(private restaurantService: RestaurantService) {}
 
-    constructor(private restaurantService: RestaurantService) {}
+  @Get()
+  public getAllRestaurants(): Promise<Restaurant[]> {
+    return this.restaurantService.getRestaurants();
+  }
 
-    @Get()
-    public getAllRestaurants() {
-        return this.restaurantService.getRestaurants();
-    }
+  @Get(':id')
+  public getRestaurantById(@Param('id') id: string): Promise<Restaurant> {
+    return this.restaurantService.getRestaurantById(id);
+  }
 
-    @Get(':id')
-    public getRestaurantById(@Param() id:number) {
-        return id;
-    }
+  @Post()
+  public createRestaurant(@Body() body: RestaurantDto) : Promise<Restaurant> {
+    return this.restaurantService.createRestaurant(body);
+  }
 
-    @Get(':id/:name/:m')
-    public getRestaurantByParams(@Param() params: {id: number, name: string, m: string}) {
-        return params;
-    }
+  @Delete()
+  public async deleteRestaurant(
+    @Query('id') id: string,
+  ): Promise<Restaurant | null> {
+    await this.restaurantService.getRestaurantById(id);
+    return this.restaurantService.deleteRestaurant(id);
+  }
 
-    @Delete()
-    public deleteRestaurant(@Query('id') id: number) {
-        return `Restaurant ${id} was deleted`;
-    }
-
-    @Post()
-    public createRestaurant(@Body() body:any) {
-        return this.restaurantService.createRestaurant(body);
-    }
-
-    @Put(':id')
-    public updateRestaurant(@Param() id:number, @Body() body: any) {
-        return id;
-    }
+  @Put(':id')
+  public async updateRestaurant(
+    @Param('id') id: string,
+    @Body() body: RestaurantDto,
+  ): Promise<Restaurant | null> {
+    await this.restaurantService.getRestaurantById(id);
+    await this.restaurantService.updateRestaurant(id, body);
+    return this.getRestaurantById(id);
+  }
 }
